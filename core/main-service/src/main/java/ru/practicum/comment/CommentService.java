@@ -1,7 +1,6 @@
 package ru.practicum.comment;
 
 
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.DeleteCommentsDto;
 import ru.practicum.dto.comment.NewCommentDto;
