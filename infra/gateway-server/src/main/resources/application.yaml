@@ -1,9 +1,6 @@
-server:
-  port: 0
-
 spring:
   application:
-    name: main-server
+    name: gateway-server
   config:
     import: "configserver:"
   cloud:
@@ -24,3 +21,6 @@ eureka:
     prefer-ip-address: true
     hostname: localhost
     instance-id: "${spring.application.name}:${random.value}"
+
+server:
+  port: 0
