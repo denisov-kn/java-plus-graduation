@@ -11,7 +11,7 @@ import ru.practicum.event.Event;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "comments")
+@Table(name = "comments", schema = "comments")
 @Getter
 @Setter
 @NoArgsConstructor

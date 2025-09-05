@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor // чтобы Builder работы при NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "events")
+@Table(name = "events", schema = "events")
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

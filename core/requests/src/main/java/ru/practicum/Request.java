@@ -10,7 +10,7 @@ import ru.practicum.event.Event;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "requests")
+@Table(name = "requests", schema = "requests")
 @Getter
 @Setter
 @NoArgsConstructor

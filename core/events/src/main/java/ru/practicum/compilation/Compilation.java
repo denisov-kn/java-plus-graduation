@@ -14,7 +14,7 @@ import java.util.Set;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
-@Table(name = "compilation")
+@Table(name = "compilation", schema = "events")
 public class Compilation {
 
     @Id
@@ -31,6 +31,7 @@ public class Compilation {
     @ManyToMany
     @JoinTable(
             name = "compilation_events",
+            schema = "events",
             joinColumns = @JoinColumn(name = "compilation_id"),
             inverseJoinColumns = @JoinColumn(name = "event_id")
     )

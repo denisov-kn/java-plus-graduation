@@ -18,6 +18,11 @@ spring:
     url: jdbc:postgresql://localhost:6542/mainservice
     username: mainservice
     password: mainservice
+    schema:
+      - classpath:schema-users.sql
+      - classpath:schema-events.sql
+      - classpath:schema-comments.sql
+      - classpath:schema-requests.sql
 
 
 eureka:
