@@ -29,6 +29,7 @@
 		<spring-retry-dependencies.version>2.0.12</spring-retry-dependencies.version>
 		<spring-cloud-dependencies.version>2023.0.3</spring-cloud-dependencies.version>
 		<org.postgresql-dependencies.version>42.7.3</org.postgresql-dependencies.version>
+		<lombok-dependencies.version>1.18.36</lombok-dependencies.version>
 		<maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
 
 	</properties>
@@ -46,13 +47,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.36</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.mapstruct</groupId>
-				<artifactId>mapstruct</artifactId>
-				<version>1.5.5.Final</version>
+				<version>${lombok-dependencies.version}</version>
 			</dependency>
 
 			<dependency>

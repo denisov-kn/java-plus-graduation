@@ -20,7 +20,6 @@
         <module>stats-server</module>
     </modules>
 
-
     <name>Explore With Me - Stats</name>
 
     <properties>

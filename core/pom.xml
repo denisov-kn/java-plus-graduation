@@ -15,6 +15,11 @@
 
     <modules>
         <module>main-service</module>
+        <module>interaction-api</module>
+        <module>users</module>
+        <module>requests</module>
+        <module>comments</module>
+        <module>events</module>
     </modules>
 
 </project>

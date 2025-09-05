@@ -5,17 +5,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
         jdbc:
           time_zone: Europe/Moscow
-        show_sql: true
-        type:
-          descriptor:
-            sql:
-              BasicBinder: TRACE
   mvc:
     format:
       date-time: yyyy-MM-dd HH:mm:ss
