@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.category.NewCategoryDto;
 import ru.practicum.event.EventRepository;
-import ru.practicum.exception.ConflictPropertyConstraintException;
-import ru.practicum.exception.ConflictRelationsConstraintException;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.types.ConflictPropertyConstraintException;
+import ru.practicum.exception.types.ConflictRelationsConstraintException;
+import ru.practicum.exception.types.NotFoundException;
 
 import java.util.List;
 

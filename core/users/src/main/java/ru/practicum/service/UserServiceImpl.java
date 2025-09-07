@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -6,11 +6,14 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import ru.practicum.UserMapper;
+import ru.practicum.UserRepository;
 import ru.practicum.dto.user.UserCreateDto;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserShortDto;
-import ru.practicum.exception.ConflictPropertyConstraintException;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.types.ConflictPropertyConstraintException;
+import ru.practicum.exception.types.NotFoundException;
+import ru.practicum.model.User;
 
 import java.util.List;
 
@@ -42,13 +45,8 @@ public class UserServiceImpl implements UserService {
     }
 
     public void deleteUserById(Long id) {
-        checkUserId(id);
+        getUserShortById(id);
         userRepository.deleteById(id);
-    }
-
-    private void checkUserId(long id) {
-        userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден."));
     }
 
     @Override
@@ -56,5 +54,12 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         return UserMapper.toUserShortDto(user);
+    }
+
+    @Override
+    public List<UserShortDto> getShortUsers(List<Long> ids, Integer from, Integer size) {
+        return getUsers(ids, from, size).stream()
+                .map(UserMapper::FullDtoToShortDto)
+                .toList();
     }
 }

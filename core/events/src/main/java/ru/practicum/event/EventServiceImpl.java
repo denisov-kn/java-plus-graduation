@@ -11,6 +11,7 @@ import ru.practicum.ViewStatsDto;
 import ru.practicum.category.Category;
 import ru.practicum.category.CategoryMapperCustom;
 import ru.practicum.category.CategoryRepository;
+import ru.practicum.clients.UserClient;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
@@ -19,13 +20,10 @@ import ru.practicum.dto.event.UpdatedEventDto;
 import ru.practicum.dto.event.enums.State;
 import ru.practicum.dto.event.enums.StateAction;
 import ru.practicum.dto.user.UserShortDto;
-import ru.practicum.exception.BadRequestException;
-import ru.practicum.exception.ConditionsNotMetException;
-import ru.practicum.exception.ConflictPropertyConstraintException;
-import ru.practicum.exception.NotFoundException;
-import ru.practicum.User;
-import ru.practicum.UserMapper;
-import ru.practicum.UserRepository;
+import ru.practicum.exception.types.BadRequestException;
+import ru.practicum.exception.types.ConditionsNotMetException;
+import ru.practicum.exception.types.ConflictPropertyConstraintException;
+import ru.practicum.exception.types.NotFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -36,15 +34,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
-    private final UserRepository userRepository;
+    private final UserClient userClient;
     private final EventRepository eventRepository;
     private final StatsClient statsClient;
     private final CategoryRepository categoryRepository;
 
     public EventFullDto saveEvent(NewEventDto newEventDto, long userId, String ip) {
-        log.debug("Попытка сохранить новое событие: {}", newEventDto);
 
-        User user = checkUserId(userId);
+        log.debug("Попытка сохранить новое событие: {}", newEventDto);
+        UserShortDto userShortDto = checkUserId(userId);
         Category category = checkCategoryId(newEventDto.getCategory());
 
         String uri = "/users/" + userId + "/events";
@@ -72,7 +70,7 @@ public class EventServiceImpl implements EventService {
 
         EventFullDto dto = EventDtoMapper.mapToFullDto(savedEvent,
                 CategoryMapperCustom.toDto(category),
-                UserMapper.toUserShortDto(user)
+                userShortDto
         );
 
         log.debug("Сформированный EventFullDto: {}", dto);
@@ -83,7 +81,7 @@ public class EventServiceImpl implements EventService {
                                     long userId, long eventId, String ip) {
         log.info("Попытка обновить событие. userId={}, eventId={}, ip={}", userId, eventId, ip);
 
-        User user = checkUserId(userId);
+        UserShortDto userShortDto = checkUserId(userId);
 
         Event event = checkAndGetEventById(eventId);
 
@@ -118,7 +116,7 @@ public class EventServiceImpl implements EventService {
 
         return EventDtoMapper.mapToFullDto(savedUpdatedEvent,
                 CategoryMapperCustom.toDto(category),
-                UserMapper.toUserShortDto(user)
+                userShortDto
         );
     }
 
@@ -162,11 +160,14 @@ public class EventServiceImpl implements EventService {
         log.info("Событие успешно обновлено админом. id={}", savedUpdatedEvent.getId());
 
 
-        User user = checkUserId(event.getInitiatorId());
+        UserShortDto userShortDto = checkUserId(event.getInitiatorId());
         Category category = checkCategoryId(event.getCategory());
 
 
-        return EventDtoMapper.mapToFullDto(savedUpdatedEvent, CategoryMapperCustom.toDto(category), UserMapper.toUserShortDto(user));
+        return EventDtoMapper.mapToFullDto(savedUpdatedEvent,
+                CategoryMapperCustom.toDto(category),
+                userShortDto
+        );
     }
 
 
@@ -228,9 +229,9 @@ public class EventServiceImpl implements EventService {
 
 
         List<Long> userIds = events.stream().map(Event::getInitiatorId).toList();
-        Map<Long, User> users = userRepository.findAllByIdIn(userIds).stream()
-                .collect(Collectors.toMap(User::getId, userRepo -> userRepo));
-        Map<Long, User> userEvents = new HashMap<>();
+        Map<Long, UserShortDto> users = getUsers(userIds).stream()
+                .collect(Collectors.toMap(UserShortDto::getId, userRepo -> userRepo));
+        Map<Long, UserShortDto> userEvents = new HashMap<>();
 
         for (Event event : events) {
            userEvents.put(event.getId(), users.get(event.getInitiatorId()));
@@ -240,7 +241,7 @@ public class EventServiceImpl implements EventService {
                 .stream()
                 .map(event -> EventDtoMapper.mapToFullDto(event,
                         CategoryMapperCustom.toDto(eventCategory.get(event.getId())),
-                        UserMapper.toUserShortDto(userEvents.get(event.getId()))
+                        userEvents.get(event.getId())
                 ))
                 .toList();
 
@@ -269,7 +270,7 @@ public class EventServiceImpl implements EventService {
     public List<EventShortDto> getEventsByUserId(long userId, Integer from, Integer size, String ip) {
         log.debug("Получен запрос на получение событий пользователя с id={} (from={}, size={}, ip={})", userId, from, size, ip);
 
-        User user = checkUserId(userId);
+        UserShortDto userShortDto = checkUserId(userId);
 
         String uri = "/users/" + userId + "/events";
         statsClient.saveHit(EndpointHitDto.builder()
@@ -302,7 +303,7 @@ public class EventServiceImpl implements EventService {
                 .map(event -> EventDtoMapper.mapToShortDto(event,
                         CategoryMapperCustom.toDto(
                                 eventCategory.get(event.getId())),
-                        UserMapper.toUserShortDto(user)
+                        userShortDto
                                 ))
                 .toList();
     }
@@ -325,7 +326,7 @@ public class EventServiceImpl implements EventService {
         log.debug("Получен запрос на получение события с id={} пользователя с id={} (from={}, size={}, ip={})",
                 eventId, userId, from, size, ip);
 
-        User user = checkUserId(userId);
+        UserShortDto userShortDto = checkUserId(userId);
 
 
         String uri = "/users/" + userId + "/events/" + eventId;
@@ -345,7 +346,7 @@ public class EventServiceImpl implements EventService {
         log.debug("Событие с id={} найдено для пользователя с id={}", eventId, userId);
         return EventDtoMapper.mapToFullDto(event,
                 CategoryMapperCustom.toDto(category),
-                UserMapper.toUserShortDto(user)
+                userShortDto
         );
     }
 
@@ -375,9 +376,7 @@ public class EventServiceImpl implements EventService {
 
         log.debug("Событие с id={} найдено", id);
 
-        UserShortDto userShortDto = UserMapper.toUserShortDto(
-                checkUserId(event.getInitiatorId())
-        );
+        UserShortDto userShortDto = checkUserId(event.getInitiatorId());
 
         CategoryDto categoryDto = CategoryMapperCustom.toDto(
                 checkCategoryId(event.getCategory())
@@ -438,11 +437,21 @@ public class EventServiceImpl implements EventService {
         log.info("Событие обновлено");
     }
 
-    private User checkUserId(long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(
-                        () -> new NotFoundException("Пользователь с id " + userId + " не найден")
-                );
+    private UserShortDto checkUserId(long userId) {
+        return userClient.getUserShortById(userId);
+    }
+
+    private List<UserShortDto> getUsers( List<Long> userIds){
+        int from = 0;
+        int size = 10;
+        List<UserShortDto> users = new ArrayList<>();
+        while (true) {
+            List<UserShortDto> page = userClient.getUsersShort(userIds, from, size);
+            users.addAll(page);
+            if (page.size() < size) break;
+            from += size;
+        }
+        return users;
     }
 
     private Category checkCategoryId(long catId) {

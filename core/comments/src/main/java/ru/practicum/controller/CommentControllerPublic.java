@@ -1,8 +1,9 @@
-package ru.practicum;
+package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.CommentService;
 import ru.practicum.dto.comment.CommentDto;
 
 import java.util.List;

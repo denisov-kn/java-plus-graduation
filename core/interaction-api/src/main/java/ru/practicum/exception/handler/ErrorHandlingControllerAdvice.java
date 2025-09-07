@@ -1,4 +1,4 @@
-package ru.practicum.error;
+package ru.practicum.exception.handler;
 
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -7,7 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.exception.*;
+import ru.practicum.exception.types.*;
 
 import java.time.LocalDateTime;
 import java.util.List;

@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.model;
 
 
 import jakarta.persistence.*;
@@ -29,9 +29,7 @@ public class Request {
     @Enumerated(EnumType.STRING)
     Status status;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "requester_id")
-    User requester;
+    Long requesterId;
 
     LocalDateTime created;
 }

@@ -3,6 +3,7 @@ package ru.practicum;
 import ru.practicum.dto.user.UserCreateDto;
 import ru.practicum.dto.user.UserDto;
 import ru.practicum.dto.user.UserShortDto;
+import ru.practicum.model.User;
 
 public class UserMapper {
     public static User toUser(UserCreateDto userCreateDto) {
@@ -23,6 +24,13 @@ public class UserMapper {
         return UserShortDto.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .build();
+    }
+
+    public static UserShortDto FullDtoToShortDto(UserDto userDto) {
+        return UserShortDto.builder()
+                .id(userDto.getId())
+                .name(userDto.getName())
                 .build();
     }
 }

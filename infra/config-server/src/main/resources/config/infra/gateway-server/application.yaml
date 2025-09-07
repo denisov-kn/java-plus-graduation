@@ -5,11 +5,14 @@ spring:
         locator:
           enabled: true
       routes:
+        - id: users_service
+          uri: lb://users
+          predicates:
+            - Path=/internal/users/**,/admin/users/**
         - id: main_service_route
           uri: lb://main-service
           predicates:
             - Path=/**
-
 
 server:
   port: 8080

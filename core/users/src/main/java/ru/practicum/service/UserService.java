@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.service;
 
 import ru.practicum.dto.user.UserCreateDto;
 import ru.practicum.dto.user.UserDto;
@@ -15,4 +15,7 @@ public interface UserService {
     void deleteUserById(Long id);
 
     UserShortDto getUserShortById(Long id);
+
+    List<UserShortDto> getShortUsers(List<Long> ids, Integer from, Integer size);
+
 }

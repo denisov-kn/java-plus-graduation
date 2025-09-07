@@ -4,16 +4,19 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.clients.UserClient;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.DeleteCommentsDto;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
 import ru.practicum.dto.event.enums.State;
+import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.event.Event;
 import ru.practicum.event.EventRepository;
-import ru.practicum.exception.BadRequestException;
-import ru.practicum.exception.ConflictRelationsConstraintException;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.types.BadRequestException;
+import ru.practicum.exception.types.ConflictRelationsConstraintException;
+import ru.practicum.exception.types.NotFoundException;
+import ru.practicum.model.Comment;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,7 +27,7 @@ import java.util.List;
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
-    private final UserRepository userRepository;
+    private final UserClient userClient;
     private final EventRepository eventRepository;
 
 
@@ -36,13 +39,13 @@ public class CommentServiceImpl implements CommentService {
         if(!event.getState().equals(State.PUBLISHED))
             throw new ConflictRelationsConstraintException("Нельзя добавить комментарий если событие не опубликовано");
 
-        User user = getUser(userId);
+        getUser(userId);
 
         Comment comment = Comment.builder()
                 .created(LocalDateTime.now())
                 .content(newCommentDto.getContent())
                 .event(event)
-                .user(user)
+                .userId(userId)
                 .build();
 
         return  CommentMapper.commentToDto(commentRepository.save(comment));
@@ -70,9 +73,9 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public List<CommentDto> getComments(String content, Long userId, Long eventId,
                                         String rangeStart, String rangeEnd, Integer from, Integer size) {
-        User user = null; Event event = null;
-        if (userId != null) user = getUser(userId);
-        if (eventId != null) event = getEvent(eventId);;
+
+        if (userId != null) getUser(userId);
+        if (eventId != null) getEvent(eventId);;
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
         if (rangeStart == null || rangeStart.isBlank()) {
@@ -133,10 +136,8 @@ public class CommentServiceImpl implements CommentService {
 
     }
 
-    private User getUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("Пользователь с id: " + userId + " не существует")
-        );
+    private UserShortDto getUser(Long userId) {
+            return userClient.getUserShortById(userId);
     }
 
     private Event getEvent(Long eventId) {

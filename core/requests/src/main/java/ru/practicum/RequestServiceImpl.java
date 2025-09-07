@@ -3,16 +3,19 @@ package ru.practicum;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.clients.UserClient;
 import ru.practicum.dto.event.enums.State;
 import ru.practicum.dto.request.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.request.EventRequestStatusUpdateResult;
 import ru.practicum.dto.request.ParticipationRequestDto;
 import ru.practicum.dto.request.enums.Status;
+import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.event.Event;
 import ru.practicum.event.EventRepository;
-import ru.practicum.exception.ConflictPropertyConstraintException;
-import ru.practicum.exception.ConflictRelationsConstraintException;
-import ru.practicum.exception.NotFoundException;
+import ru.practicum.exception.types.ConflictPropertyConstraintException;
+import ru.practicum.exception.types.ConflictRelationsConstraintException;
+import ru.practicum.exception.types.NotFoundException;
+import ru.practicum.model.Request;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,28 +26,28 @@ import java.util.stream.Collectors;
 public class RequestServiceImpl implements RequestService {
 
     private final RequestRepository requestRepository;
-    private final UserRepository userRepository;
+    private final UserClient userClient;
     private final EventRepository eventRepository;
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
         findUser(userId);
-        return requestRepository.findByRequester_Id(userId).stream()
+        return requestRepository.findByRequesterId(userId).stream()
                 .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public ParticipationRequestDto addUserRequest(Long userId, Long eventId) {
-        User user = findUser(userId);
+        UserShortDto userShortDto = findUser(userId);
         Event event = findEvent(eventId);
-        requestRepository.findByRequester_IdAndEvent_Id(userId, eventId).ifPresent(
+        requestRepository.findByRequesterIdAndEventId(userId, eventId).ifPresent(
                 request -> {
                     throw new ConflictPropertyConstraintException("Нельзя добавить повторный запрос");
                 }
         );
 
-        if (event.getInitiatorId() == user.getId()) {
+        if (event.getInitiatorId() == userShortDto.getId()) {
             throw new ConflictRelationsConstraintException(
                     "Инициатор события не может добавить запрос на участие в своём событии"
             );
@@ -65,7 +68,7 @@ public class RequestServiceImpl implements RequestService {
         }
 
         Request request = Request.builder()
-                .requester(user)
+                .requesterId(userId)
                 .status(status)
                 .event(event)
                 .created(LocalDateTime.now().withNano(
@@ -79,7 +82,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public ParticipationRequestDto cancelUserRequest(Long userId, Long requestId) {
-        User user = findUser(userId);
+        findUser(userId);
         Request request = requestRepository.findById(requestId).orElseThrow(
                 () -> new NotFoundException("Запрос с id " + requestId + " не найден")
         );
@@ -184,10 +187,8 @@ public class RequestServiceImpl implements RequestService {
                 .toList();
     }
 
-    private User findUser(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                () -> new NotFoundException("Пользователь с id " + userId + " не найден")
-        );
+    private UserShortDto findUser(Long userId) {
+            return userClient.getUserShortById(userId);
     }
 
     private Event findEvent(Long eventId) {

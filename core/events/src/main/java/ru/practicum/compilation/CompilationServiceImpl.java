@@ -4,14 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import ru.practicum.category.CategoryService;
+import ru.practicum.clients.UserClient;
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.dto.event.EventShortDto;
 import ru.practicum.event.Event;
 import ru.practicum.event.EventRepository;
-import ru.practicum.exception.NotFoundException;
-import ru.practicum.UserService;
+import ru.practicum.exception.types.NotFoundException;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -25,7 +25,7 @@ public class CompilationServiceImpl implements CompilationService {
 
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
-    private final UserService userService;
+    private final UserClient userClient;
     private final CategoryService categoryService;
 
     @Override
@@ -103,7 +103,7 @@ public class CompilationServiceImpl implements CompilationService {
                         .paid(event.getPaid())
                         .confirmedRequests(event.getConfirmedRequests())
                         .views(event.getViews())
-                        .initiator(userService.getUserShortById(event.getInitiatorId()))
+                        .initiator(userClient.getUserShortById(event.getInitiatorId()))
                         .category(categoryService.getById(event.getCategory()))
                         .build())
                 .toList();

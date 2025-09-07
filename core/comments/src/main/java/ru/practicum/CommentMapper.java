@@ -1,6 +1,7 @@
 package ru.practicum;
 
 import ru.practicum.dto.comment.CommentDto;
+import ru.practicum.model.Comment;
 
 public class CommentMapper {
 
@@ -8,7 +9,7 @@ public class CommentMapper {
         return CommentDto.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
-                .user(comment.getUser().getId())
+                .user(comment.getUserId())
                 .event(comment.getEvent().getId())
                 .build();
     }

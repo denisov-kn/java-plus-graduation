@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -26,9 +26,7 @@ public class Comment {
     @NotEmpty
     String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "user_id")
-    User user;
+    Long userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "event_id")
