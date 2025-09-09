@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS events.events (
     request_moderation BOOLEAN,
     state VARCHAR(32),
     title VARCHAR(255) NOT NULL,
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES events.categories(id)
 );
 
 
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS events.compilation_events (
     compilation_id INT NOT NULL,
     event_id INT NOT NULL,
     PRIMARY KEY (compilation_id, event_id),
-    FOREIGN KEY (compilation_id) REFERENCES compilation(id),
-    FOREIGN KEY (event_id) REFERENCES events(id)
+    FOREIGN KEY (compilation_id) REFERENCES events.compilation(id),
+    FOREIGN KEY (event_id) REFERENCES events.events(id)
     );
 
