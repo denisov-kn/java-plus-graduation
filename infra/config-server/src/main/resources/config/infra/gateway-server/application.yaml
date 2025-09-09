@@ -5,11 +5,10 @@ spring:
         locator:
           enabled: true
       routes:
-        # TODO Переделать роут при выносе requests
-        - id: main_service_requests_route
-          uri: lb://main-service
+        - id: requests-service_route
+          uri: lb://requests
           predicates:
-          - Path=/users/*/events/*/requests/**
+          - Path=/users/*/events/*/requests/**,/users/*/requests/**
         - id: users_service_route
           uri: lb://users
           predicates:
