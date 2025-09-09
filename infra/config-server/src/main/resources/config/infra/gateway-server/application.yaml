@@ -6,7 +6,7 @@ spring:
           enabled: true
       routes:
         - id: comments-service_route
-          uri: lb://comments
+          uri: lb://comment-service
           predicates:
             - Path=/admin/comments/**,/users/*/comment/**,/comment/**
         - id: requests-service_route

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: comments
+    name: comment-service
   config:
     import: "configserver:"
   cloud:

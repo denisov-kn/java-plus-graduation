@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>comments</artifactId>
+    <artifactId>comment-service</artifactId>
 
     <dependencies>
         <dependency>
