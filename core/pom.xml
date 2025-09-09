@@ -15,7 +15,7 @@
 
     <modules>
         <module>interaction-api</module>
-        <module>users</module>
+        <module>user-service</module>
         <module>requests</module>
         <module>comments</module>
         <module>events</module>
