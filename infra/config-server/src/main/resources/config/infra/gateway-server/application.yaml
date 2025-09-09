@@ -10,7 +10,7 @@ spring:
           predicates:
             - Path=/admin/comments/**,/users/*/comment/**,/comment/**
         - id: requests-service_route
-          uri: lb://requests
+          uri: lb://request-service
           predicates:
           - Path=/users/*/events/*/requests/**,/users/*/requests/**
         - id: users_service_route
@@ -18,15 +18,15 @@ spring:
           predicates:
             - Path=/internal/users/**,/admin/users/**
         - id: events_core_route
-          uri: lb://events
+          uri: lb://event-service
           predicates:
             - Path=/admin/events/**,/users/*/events/**,/events/**,/internal/events/**
         - id: events_category_route
-          uri: lb://events
+          uri: lb://event-service
           predicates:
             - Path=/admin/categories/**,/categories/**
         - id: event_compilation_route
-          uri: lb://events
+          uri: lb://event-service
           predicates:
               - Path=/admin/compilations/**,/compilations/**
 

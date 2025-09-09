@@ -16,9 +16,9 @@
     <modules>
         <module>interaction-api</module>
         <module>user-service</module>
-        <module>requests</module>
+        <module>request-service</module>
         <module>comments</module>
-        <module>events</module>
+        <module>event-service</module>
     </modules>
 
 </project>
