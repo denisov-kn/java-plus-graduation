@@ -4,6 +4,7 @@ package ru.practicum.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.service.CommentService;
@@ -13,6 +14,7 @@ import ru.practicum.dto.comment.UpdateCommentDto;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class CommentControllerPrivate {
@@ -25,7 +27,10 @@ public class CommentControllerPrivate {
                                     @RequestParam @Positive Long eventId,
                                     @Valid @RequestBody NewCommentDto newCommentDto) {
 
-        return commentService.createComment(userId, eventId, newCommentDto);
+        log.info("Creating new comment for user {} with id {}", userId, eventId);
+        CommentDto comment = commentService.createComment(userId, eventId, newCommentDto);
+        log.info("CommentDto created: {}", comment);
+        return comment;
 
     }
 
@@ -35,7 +40,10 @@ public class CommentControllerPrivate {
                                     @PathVariable @Positive Long commentId,
                                     @Valid @RequestBody UpdateCommentDto updateCommentDto) {
 
-        return commentService.updateComment(userId, commentId, updateCommentDto);
+        log.info("Updating comment for user {} with id {}", userId, commentId);
+        CommentDto comment = commentService.updateComment(userId, commentId, updateCommentDto);
+        log.info("CommentDto updated: {}", comment);
+        return comment;
 
     }
 
@@ -44,7 +52,9 @@ public class CommentControllerPrivate {
     public void deleteComment(@PathVariable @Positive Long userId,
                               @PathVariable @Positive Long commentId) {
 
+        log.info("Deleting comment for user {} with id {}", userId, commentId);
         commentService.deleteCommentByUser(userId, commentId);
+        log.info("CommentDto deleted: {}", commentId);
 
     }
 
@@ -52,7 +62,10 @@ public class CommentControllerPrivate {
     @ResponseStatus(HttpStatus.OK)
     public List<CommentDto> getCommentsByUserId(@PathVariable @Positive Long userId) {
 
-        return commentService.getCommentsByUserId(userId);
+        log.info("Getting comments by user {}", userId);
+        List<CommentDto> comments = commentService.getCommentsByUserId(userId);
+        log.info("CommentDto list: {}", comments);
+        return comments;
 
     }
 

@@ -5,6 +5,10 @@ spring:
         locator:
           enabled: true
       routes:
+        - id: comments-service_route
+          uri: lb://comments
+          predicates:
+            - Path=/admin/comments/**,/users/*/comment/**,/comment/**
         - id: requests-service_route
           uri: lb://requests
           predicates:
@@ -25,10 +29,6 @@ spring:
           uri: lb://events
           predicates:
               - Path=/admin/compilations/**,/compilations/**
-        - id: main_service_route
-          uri: lb://main-service
-          predicates:
-            - Path=/**
 
 server:
   port: 8080

@@ -44,7 +44,14 @@ services:
     container_name: postgres-ewm-db
     ports:
       - "6542:5432"
+    volumes:
+      - ./init-sql:/docker-entrypoint-initdb.d/
     environment:
       - POSTGRES_PASSWORD=mainservice
       - POSTGRES_USER=mainservice
       - POSTGRES_DB=mainservice
+    healthcheck:
+      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
+      timeout: 5s
+      interval: 5s
+      retries: 10

@@ -5,4 +5,4 @@ CREATE TABLE IF NOT EXISTS comments.comments (
     user_id INT NOT NULL,
     event_id INT NOT NULL,
     created TIMESTAMP NOT NULL
-)
+);
