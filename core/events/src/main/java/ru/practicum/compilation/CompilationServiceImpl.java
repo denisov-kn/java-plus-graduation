@@ -9,7 +9,7 @@ import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.NewCompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.dto.event.EventShortDto;
-import ru.practicum.event.Event;
+import ru.practicum.event.model.Event;
 import ru.practicum.event.EventRepository;
 import ru.practicum.exception.types.NotFoundException;
 

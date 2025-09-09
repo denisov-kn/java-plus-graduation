@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.CommentService;
+import ru.practicum.service.CommentService;
 import ru.practicum.dto.comment.DeleteCommentsDto;
 
 @RestController

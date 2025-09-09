@@ -10,7 +10,7 @@ public class CommentMapper {
                 .id(comment.getId())
                 .content(comment.getContent())
                 .user(comment.getUserId())
-                .event(comment.getEvent().getId())
+                .event(comment.getEventId())
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
@@ -29,9 +29,6 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
 
         CriteriaQuery<Comment> cq = cb.createQuery(Comment.class);
         Root<Comment> commentRoot = cq.from(Comment.class);
-
-        commentRoot.fetch("user", JoinType.LEFT); // должно подгружать сущности User и Event по id с @ManyToOne
-        commentRoot.fetch("event", JoinType.LEFT); // для возврата (в Comment хранится userId и EventId)
 
         List<Predicate> selectPreds = buildPredicates(
                 cb, commentRoot, content, userId, eventId,
@@ -75,11 +72,11 @@ public class CommentRepositoryImpl implements CommentRepositoryCustom {
         }
 
         if (userId != null) {
-            p.add(cb.equal(root.get("user").get("id"), userId));
+            p.add(cb.equal(root.get("userId"), userId));
         }
 
         if (eventId != null) {
-            p.add(cb.equal(root.get("event").get("id"), eventId));
+            p.add(cb.equal(root.get("eventId"), eventId));
         }
 
         if (rangeStart != null) {

@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.dto.request.enums.Status;
-import ru.practicum.event.Event;
 
 import java.time.LocalDateTime;
 
@@ -22,9 +21,7 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "event_id")
-    Event event;
+    Long eventId;
 
     @Enumerated(EnumType.STRING)
     Status status;

@@ -1,22 +1,24 @@
-package ru.practicum;
+package ru.practicum.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import ru.practicum.CommentMapper;
+import ru.practicum.clients.EventClient;
 import ru.practicum.clients.UserClient;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.DeleteCommentsDto;
 import ru.practicum.dto.comment.NewCommentDto;
 import ru.practicum.dto.comment.UpdateCommentDto;
+import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.enums.State;
 import ru.practicum.dto.user.UserShortDto;
-import ru.practicum.event.Event;
-import ru.practicum.event.EventRepository;
 import ru.practicum.exception.types.BadRequestException;
 import ru.practicum.exception.types.ConflictRelationsConstraintException;
 import ru.practicum.exception.types.NotFoundException;
 import ru.practicum.model.Comment;
+import ru.practicum.repository.CommentRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,15 +30,15 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final UserClient userClient;
-    private final EventRepository eventRepository;
+    private final EventClient eventClient;
 
 
     @Override
     public CommentDto createComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
 
-        Event event = getEvent(eventId);
+        EventFullDto eventFullDto = getEvent(eventId);
 
-        if(!event.getState().equals(State.PUBLISHED))
+        if(!eventFullDto.getState().equals(State.PUBLISHED))
             throw new ConflictRelationsConstraintException("Нельзя добавить комментарий если событие не опубликовано");
 
         getUser(userId);
@@ -44,7 +46,7 @@ public class CommentServiceImpl implements CommentService {
         Comment comment = Comment.builder()
                 .created(LocalDateTime.now())
                 .content(newCommentDto.getContent())
-                .event(event)
+                .eventId(eventFullDto.getId())
                 .userId(userId)
                 .build();
 
@@ -140,10 +142,8 @@ public class CommentServiceImpl implements CommentService {
             return userClient.getUserShortById(userId);
     }
 
-    private Event getEvent(Long eventId) {
-        return eventRepository.findById(eventId).orElseThrow(
-                () -> new NotFoundException("События с id: " + eventId + " не существует")
-        );
+    private EventFullDto getEvent(Long eventId) {
+        return eventClient.getInternalEventById(eventId);
     }
 
     private Comment getCommentByUserId(Long userId, Long commentId) {

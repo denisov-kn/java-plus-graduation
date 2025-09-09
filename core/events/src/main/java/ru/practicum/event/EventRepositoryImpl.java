@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import ru.practicum.dto.event.enums.State;
+import ru.practicum.event.model.Event;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;

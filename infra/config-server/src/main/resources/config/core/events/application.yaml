@@ -18,6 +18,3 @@ spring:
     url: jdbc:postgresql://localhost:6542/mainservice
     username: mainservice
     password: mainservice
-    schema:
-      - classpath:schema-events.sql
-      - classpath:schema-comments.sql

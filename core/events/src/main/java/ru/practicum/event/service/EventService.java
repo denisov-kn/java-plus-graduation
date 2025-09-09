@@ -1,4 +1,4 @@
-package ru.practicum.event;
+package ru.practicum.event.service;
 
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.EventShortDto;
@@ -28,4 +28,10 @@ public interface EventService {
 
     EventFullDto updateAdminEvent(UpdatedEventDto updatedEventDto,
                                             long eventId, String ip);
+
+    EventFullDto getInternalEventById(long eventId);
+
+    EventFullDto getEventByInitiatorIdAndEventId(long eventId, long initiatorId);
+
+    EventFullDto updateEventById(long id, long requests);
 }

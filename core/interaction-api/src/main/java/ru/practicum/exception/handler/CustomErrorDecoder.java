@@ -4,6 +4,7 @@ import feign.Response;
 import feign.codec.ErrorDecoder;
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
+import ru.practicum.exception.types.ConflictRelationsConstraintException;
 import ru.practicum.exception.types.InternalServerErrorException;
 import ru.practicum.exception.types.NotFoundException;
 
@@ -33,6 +34,10 @@ public class CustomErrorDecoder implements ErrorDecoder {
 
         if (response.status() == 500) {
             return new InternalServerErrorException(methodKey + ": " + message);
+        }
+
+        if (response.status() == 409) {
+            return new ConflictRelationsConstraintException(methodKey + ": " + message);
         }
 
         return defaultDecoder.decode(methodKey, response);

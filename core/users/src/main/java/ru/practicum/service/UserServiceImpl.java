@@ -32,13 +32,16 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<UserDto> getUsers(List<Long> ids, Integer from, Integer size) {
-        final Pageable pageable = PageRequest.of(0, size + from, Sort.by("id").ascending());
+        int page = from > 0 ? from / size : 0;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
+
         Page<User> users;
         if (ids == null || ids.isEmpty()) {
             users = userRepository.findAll(pageable);
         } else {
-            users = userRepository.findAllByIdIn(ids, PageRequest.of(from > 0 ? from / size : 0, size)); /// нужна ли сортировка?
+            users = userRepository.findAllByIdIn(ids, pageable);
         }
+
         return users.getContent().stream()
                 .map(UserMapper::toUserDto)
                 .toList();

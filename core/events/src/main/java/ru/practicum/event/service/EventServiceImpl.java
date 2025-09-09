@@ -1,4 +1,4 @@
-package ru.practicum.event;
+package ru.practicum.event.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,10 +20,10 @@ import ru.practicum.dto.event.UpdatedEventDto;
 import ru.practicum.dto.event.enums.State;
 import ru.practicum.dto.event.enums.StateAction;
 import ru.practicum.dto.user.UserShortDto;
-import ru.practicum.exception.types.BadRequestException;
-import ru.practicum.exception.types.ConditionsNotMetException;
-import ru.practicum.exception.types.ConflictPropertyConstraintException;
-import ru.practicum.exception.types.NotFoundException;
+import ru.practicum.event.EventDtoMapper;
+import ru.practicum.event.EventRepository;
+import ru.practicum.event.model.Event;
+import ru.practicum.exception.types.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -170,6 +170,41 @@ public class EventServiceImpl implements EventService {
         );
     }
 
+
+    @Override
+    public EventFullDto getEventByInitiatorIdAndEventId(long eventId, long initiatorId) {
+        Event event = eventRepository.findByInitiatorIdAndId(initiatorId, eventId).orElseThrow(
+                () -> new NotFoundException("Событие с id " + eventId + " не найдено для пользователя " + initiatorId)
+        );
+
+        UserShortDto userShortDto = checkUserId(event.getInitiatorId());
+        Category category = checkCategoryId(event.getCategory());
+
+        return EventDtoMapper.mapToFullDto(event,
+                CategoryMapperCustom.toDto(category),
+                userShortDto
+        );
+
+    }
+
+    @Override
+    public EventFullDto updateEventById(long id, long requests) {
+
+        Event event = checkAndGetEventById(id);
+
+        UserShortDto userShortDto = checkUserId(event.getInitiatorId());
+        Category category = checkCategoryId(event.getCategory());
+
+        event.setConfirmedRequests(requests);
+
+        event = eventRepository.save(event);
+
+        return EventDtoMapper.mapToFullDto(event,
+                CategoryMapperCustom.toDto(category),
+                userShortDto
+        );
+
+    }
 
     public List<EventFullDto> getEvents(String text, List<Long> categories, Boolean paid,
                                         String rangeStart, String rangeEnd, Boolean onlyAvailable,
@@ -351,6 +386,27 @@ public class EventServiceImpl implements EventService {
     }
 
 
+    @Override
+    public EventFullDto getInternalEventById(long eventId) {
+        log.debug("Получен запрос на получение события с eventId={} ", eventId);
+        Event event = eventRepository.findById(eventId).orElseThrow(
+                () -> new NotFoundException("Событие с eventId " + eventId + " не найдено")
+        );
+
+        if (!event.getState().equals(State.PUBLISHED))
+            throw new ConflictRelationsConstraintException("Событие с eventId " + eventId + " не опубликовано");
+
+        log.debug("Событие с eventId={} найдено", eventId);
+
+        UserShortDto userShortDto = checkUserId(event.getInitiatorId());
+
+        CategoryDto categoryDto = CategoryMapperCustom.toDto(
+                checkCategoryId(event.getCategory())
+        );
+
+        return EventDtoMapper.mapToFullDto(event, categoryDto, userShortDto);
+    }
+
     public EventFullDto getEventById(long id, String ip) {
         log.debug("Получен запрос на получение события с id={} от ip={}", id, ip);
 
@@ -443,15 +499,8 @@ public class EventServiceImpl implements EventService {
 
     private List<UserShortDto> getUsers( List<Long> userIds){
         int from = 0;
-        int size = 10;
-        List<UserShortDto> users = new ArrayList<>();
-        while (true) {
-            List<UserShortDto> page = userClient.getUsersShort(userIds, from, size);
-            users.addAll(page);
-            if (page.size() < size) break;
-            from += size;
-        }
-        return users;
+        int size = 1000;
+        return userClient.getUsersShort(userIds, from, size);
     }
 
     private Category checkCategoryId(long catId) {
