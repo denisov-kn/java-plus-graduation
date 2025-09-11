@@ -13,6 +13,9 @@ spring:
         use-random-policy: true
         max-interval: 6000
 
+server:
+  port: 0
+
 eureka:
   client:
     serviceUrl:
@@ -21,6 +24,3 @@ eureka:
     prefer-ip-address: true
     hostname: localhost
     instance-id: "${spring.application.name}:${random.value}"
-
-server:
-  port: 0
