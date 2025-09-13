@@ -22,7 +22,6 @@
         <module>aggregator</module>
         <module>analyzer</module>
         <module>serialization</module>
-        <module>serialization/avro-schemas</module>
     </modules>
 
     <name>Explore With Me - Stats</name>
