@@ -1,10 +1,17 @@
 package ru.practicum;
 
+import com.google.protobuf.Timestamp;
+import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import ru.yandex.practicum.grpc.stats.action.ActionTypeProto;
+import ru.yandex.practicum.grpc.stats.action.UserActionProto;
+import ru.yandex.practicum.grpc.stats.analyzer.RecommendationsControllerGrpc;
+import ru.yandex.practicum.grpc.stats.collector.UserActionControllerGrpc;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -13,47 +20,31 @@ import java.util.Map;
 @Service
 public class StatsClient {
 
-    private final RestTemplate restTemplate;
-    private final String serverUrl;
-    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    @GrpcClient("analyzer")
+    private RecommendationsControllerGrpc.RecommendationsControllerBlockingStub analyzer;
 
-    public StatsClient(RestTemplate restTemplate, String serverUrl) {
-        this.restTemplate = restTemplate;
-        this.serverUrl = serverUrl;
+    @GrpcClient("collector")
+    private UserActionControllerGrpc.UserActionControllerBlockingStub collector;
+
+
+
+    public void sendUserAction (long userId, long eventId, ActionTypeProto actionType) {
+        UserActionProto request = UserActionProto.newBuilder()
+                .setUserId(userId)
+                .setEventId(eventId)
+                .setActionType(actionType)
+                .setTimestamp(getTs())
+                .build();
+
+        collector.collectUserAction(request);
     }
 
-    public void saveHit(EndpointHitDto dto) {
-        HttpEntity<EndpointHitDto> request = new HttpEntity<>(dto, defaultHeaders());
-        restTemplate.exchange(serverUrl + "/hit", HttpMethod.POST, request, Void.class);
+    private Timestamp getTs() {
+        return Timestamp.newBuilder()
+                .setSeconds(Instant.now().getEpochSecond())
+                .setNanos(Instant.now().getNano())
+                .build();
     }
 
-    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
-        String uriString = String.join(",", uris);
-        Map<String, Object> params = Map.of(
-                "start", start.format(dateTimeFormatter),
-                "end", end.format(dateTimeFormatter),
-                "uris", uriString,
-                "unique", unique
-        );
 
-        String uri = serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}";
-        HttpEntity<Void> request = new HttpEntity<>(defaultHeaders());
-
-        ResponseEntity<List<ViewStatsDto>> response = restTemplate.exchange(
-                uri,
-                HttpMethod.GET,
-                request,
-                new ParameterizedTypeReference<>() {},
-                params
-        );
-
-        return response.getBody();
-    }
-
-    private HttpHeaders defaultHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
-        return headers;
-    }
 }

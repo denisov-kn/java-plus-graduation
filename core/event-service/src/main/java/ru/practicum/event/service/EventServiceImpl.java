@@ -48,12 +48,16 @@ public class EventServiceImpl implements EventService {
         String uri = "/users/" + userId + "/events";
 
         log.info("Отправка статистики: ip={}, uri={}", ip, uri);
+
+        /*
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .ip(ip)
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+
+         */
         Event event = EventDtoMapper.mapToModel(newEventDto, userId);
         event.setCreatedOn(LocalDateTime.now());
 
@@ -85,13 +89,14 @@ public class EventServiceImpl implements EventService {
 
         Event event = checkAndGetEventById(eventId);
 
-        String uri = "/users/" + userId + "/events/" + eventId;
+        /* String uri = "/users/" + userId + "/events/" + eventId;
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .ip(ip)
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+         */
 
         if (!event.getState().equals(State.CANCELED) && !event.getState().equals(State.PENDING)) {
             log.warn("Событие нельзя изменить. Состояние: {}, Модерация: {}",
@@ -126,6 +131,7 @@ public class EventServiceImpl implements EventService {
 
         Event event = checkAndGetEventById(eventId);
 
+        /*
         String uri = "/admin/events/" + eventId;
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
@@ -133,6 +139,8 @@ public class EventServiceImpl implements EventService {
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+
+         */
 
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             log.warn("Событие начинается в течение часа: {}", event.getEventDate());
@@ -234,12 +242,15 @@ public class EventServiceImpl implements EventService {
         boolean isAdmin = !"user".equalsIgnoreCase(user);
         String uri = isAdmin ? "/admin/events" : "/events";
 
+        /*
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .ip(ip)
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+
+         */
 
 
         Sort sortParam;
@@ -308,12 +319,16 @@ public class EventServiceImpl implements EventService {
         UserShortDto userShortDto = checkUserId(userId);
 
         String uri = "/users/" + userId + "/events";
+
+        /*
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .ip(ip)
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+
+         */
 
 
         int safeFrom = (from != null) ? from : 0;
@@ -363,6 +378,7 @@ public class EventServiceImpl implements EventService {
 
         UserShortDto userShortDto = checkUserId(userId);
 
+        /*
 
         String uri = "/users/" + userId + "/events/" + eventId;
         statsClient.saveHit(EndpointHitDto.builder()
@@ -371,6 +387,8 @@ public class EventServiceImpl implements EventService {
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+
+         */
 
         Event event = eventRepository.findByInitiatorIdAndId(userId, eventId).orElseThrow(
                 () -> new NotFoundException("Событие с id " + eventId + " не найдено для пользователя " + userId)
@@ -410,6 +428,7 @@ public class EventServiceImpl implements EventService {
     public EventFullDto getEventById(long id, String ip) {
         log.debug("Получен запрос на получение события с id={} от ip={}", id, ip);
 
+        /*
         String uri = "/events/" + id;
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
@@ -417,6 +436,8 @@ public class EventServiceImpl implements EventService {
                 .uri(uri)
                 .timestamp(LocalDateTime.now())
                 .build());
+
+         */
 
         Optional<Event> eventOpt = eventRepository.findById(id);
         if (eventOpt.isEmpty()) {

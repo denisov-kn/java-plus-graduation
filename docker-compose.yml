@@ -4,6 +4,8 @@ services:
     container_name: postgres-stats-db
     ports:
       - "6541:5432"
+    volumes:
+      - ./init-sql:/docker-entrypoint-initdb.d/recommendation.sql
     environment:
       - POSTGRES_PASSWORD=statistics
       - POSTGRES_USER=statistics
@@ -45,7 +47,7 @@ services:
     ports:
       - "6542:5432"
     volumes:
-      - ./init-sql:/docker-entrypoint-initdb.d/
+      - ./init-sql:/docker-entrypoint-initdb.d/core.sql
     environment:
       - POSTGRES_PASSWORD=mainservice
       - POSTGRES_USER=mainservice
