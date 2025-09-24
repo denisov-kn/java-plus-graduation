@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
+@ToString
 public class UserAction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

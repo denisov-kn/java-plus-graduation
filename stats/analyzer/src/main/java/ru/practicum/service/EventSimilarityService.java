@@ -13,7 +13,10 @@ public class EventSimilarityService {
     private final EventSimilarityRepository eventSimilarityRepository;
 
     public EventSimilarity processEventSimilarity(EventSimilarityAvro eventSimilarityAvro) {
-            return Mapper.similarityFromAvro(eventSimilarityAvro);
+
+        EventSimilarity eventSimilarity = Mapper.similarityFromAvro(eventSimilarityAvro);
+        eventSimilarityRepository.save(eventSimilarity);
+        return Mapper.similarityFromAvro(eventSimilarityAvro);
     }
 
 

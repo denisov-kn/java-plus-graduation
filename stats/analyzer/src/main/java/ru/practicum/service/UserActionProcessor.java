@@ -24,7 +24,7 @@ public class UserActionProcessor {
     @Qualifier("kafkaConsumerUserAction")
     private KafkaConsumer<String, SpecificRecordBase> consumer;
 
-    @Value("kafka.topics.user-action")
+    @Value("${kafka.topics.user-action}")
     private String userActionTopic;
 
     @Autowired
