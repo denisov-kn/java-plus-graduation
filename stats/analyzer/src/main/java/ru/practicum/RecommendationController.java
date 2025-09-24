@@ -9,7 +9,7 @@ import ru.practicum.model.UserAction;
 import ru.practicum.repository.EventSimilarityRepository;
 import ru.practicum.repository.UserActionRepository;
 import ru.practicum.utils.ActionWeights;
-import ru.yandex.practicum.grpc.stats.analyzer.RecommendationsControllerGrpc;
+import ru.yandex.practicum.grpc.stats.dashboard.RecommendationsControllerGrpc;
 import ru.yandex.practicum.grpc.stats.recommendation.InteractionsCountRequestProto;
 import ru.yandex.practicum.grpc.stats.recommendation.RecommendedEventProto;
 import ru.yandex.practicum.grpc.stats.recommendation.SimilarEventsRequestProto;
