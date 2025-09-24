@@ -31,3 +31,7 @@ kafka:
     event-similarity: stats.events-similarity.v1
     user-action: stats.user-actions.v1
 
+grpc:
+  server:
+    port: 0
+

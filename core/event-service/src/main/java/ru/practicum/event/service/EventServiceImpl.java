@@ -24,6 +24,8 @@ import ru.practicum.event.EventDtoMapper;
 import ru.practicum.event.EventRepository;
 import ru.practicum.event.model.Event;
 import ru.practicum.exception.types.*;
+import ru.yandex.practicum.grpc.stats.action.ActionTypeProto;
+import ru.yandex.practicum.grpc.stats.recommendation.RecommendedEventProto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -45,11 +47,12 @@ public class EventServiceImpl implements EventService {
         UserShortDto userShortDto = checkUserId(userId);
         Category category = checkCategoryId(newEventDto.getCategory());
 
+        /*
         String uri = "/users/" + userId + "/events";
 
         log.info("Отправка статистики: ip={}, uri={}", ip, uri);
 
-        /*
+
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .ip(ip)
@@ -240,9 +243,10 @@ public class EventServiceImpl implements EventService {
         log.info("Финальный диапазон дат: start={}, end={}", start, end);
 
         boolean isAdmin = !"user".equalsIgnoreCase(user);
-        String uri = isAdmin ? "/admin/events" : "/events";
 
         /*
+        String uri = isAdmin ? "/admin/events" : "/events";
+
         statsClient.saveHit(EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .ip(ip)
@@ -293,24 +297,35 @@ public class EventServiceImpl implements EventService {
 
         log.info("Получено {} событий после фильтрации", eventsDto.size());
 
+        Map<Long, Double> eventRating = getEventRating(events);
+
         List<EventFullDto> eventsWithViews = eventsDto.stream()
-                .map(e -> {
-                    String uriEvent = "/events/" + e.getId();
-                    List<ViewStatsDto> statsList = statsClient.getStats(
-                            LocalDateTime.of(1900, 1, 1, 0, 0), LocalDateTime.now(), List.of(uriEvent), false);
-                    long views = statsList.isEmpty() ? 0L : statsList.getFirst().getHits();
-                    e.setViews(views);
-                    return e;
+                .map(eventFullDto -> {
+                    double rating = eventRating.getOrDefault(eventFullDto.getId(), 0.0);
+                    eventFullDto.setRating(rating);
+                    return eventFullDto;
                 }).toList();
 
-        if (sort != null && sort.equals("VIEWS")) {
+        if (sort != null && sort.equals("RATING")) {
             log.info("Сортировка по количеству просмотров");
             return eventsDto.stream()
-                    .sorted(Comparator.comparing(EventFullDto::getViews))
+                    .sorted(Comparator.comparing(EventFullDto::getRating))
                     .toList();
         }
 
         return eventsWithViews;
+    }
+
+    private Map<Long, Double> getEventRating(List<Event> events) {
+        List<Long> eventIds = events.stream()
+                .map(Event::getId)
+                .toList();
+
+        return statsClient.getGetInteractionsCount(eventIds)
+                .collect(Collectors.toMap(
+                        RecommendedEventProto::getEventId,
+                        RecommendedEventProto::getScore
+                ));
     }
 
     public List<EventShortDto> getEventsByUserId(long userId, Integer from, Integer size, String ip) {
@@ -341,14 +356,14 @@ public class EventServiceImpl implements EventService {
 
         Map<Long, Category> eventCategory = getCategoryMap(userEvents);
 
+
+        Map<Long, Double> eventRating = getEventRating(userEvents);
+
         return userEvents.stream()
-                .map(e -> {
-                    String uriEvent = "/events/" + e.getId();
-                    List<ViewStatsDto> statsList = statsClient.getStats(
-                            LocalDateTime.of(1900, 1, 1, 0, 0), LocalDateTime.now(), List.of(uriEvent), false);
-                    long views = statsList.isEmpty() ? 0L : statsList.getFirst().getHits();
-                    e.setViews(views);
-                    return e;
+                .map(event -> {
+                    double rating = eventRating.getOrDefault(event.getId(), 0.0);
+                    event.setRating(rating);
+                    return event;
                 })
                 .map(event -> EventDtoMapper.mapToShortDto(event,
                         CategoryMapperCustom.toDto(
@@ -425,8 +440,8 @@ public class EventServiceImpl implements EventService {
         return EventDtoMapper.mapToFullDto(event, categoryDto, userShortDto);
     }
 
-    public EventFullDto getEventById(long id, String ip) {
-        log.debug("Получен запрос на получение события с id={} от ip={}", id, ip);
+    public EventFullDto getEventById(long eventId, long userId,  String ip) {
+        log.debug("Получен запрос на получение события с id={} от ip={}", eventId, ip);
 
         /*
         String uri = "/events/" + id;
@@ -439,19 +454,19 @@ public class EventServiceImpl implements EventService {
 
          */
 
-        Optional<Event> eventOpt = eventRepository.findById(id);
+        Optional<Event> eventOpt = eventRepository.findById(eventId);
         if (eventOpt.isEmpty()) {
-            log.warn("Событие с id={} не найдено", id);
-            throw new NotFoundException("Событие с id " + id + " не найдено");
+            log.warn("Событие с id={} не найдено", eventId);
+            throw new NotFoundException("Событие с id " + eventId + " не найдено");
         }
 
         Event event = eventOpt.get();
 
         if (!event.getState().equals(State.PUBLISHED))
-            throw new NotFoundException("Событие с id " + id + " не опубликовано");
+            throw new NotFoundException("Событие с id " + eventId + " не опубликовано");
 
 
-        log.debug("Событие с id={} найдено", id);
+        log.debug("Событие с id={} найдено", eventId);
 
         UserShortDto userShortDto = checkUserId(event.getInitiatorId());
 
@@ -459,14 +474,61 @@ public class EventServiceImpl implements EventService {
                 checkCategoryId(event.getCategory())
         );
 
-        EventFullDto dto = EventDtoMapper.mapToFullDto(event,  categoryDto, userShortDto);
-        List<ViewStatsDto> statsList = statsClient.getStats(
-                LocalDateTime.of(1900, 1, 1, 0, 0), LocalDateTime.now(), List.of(uri), true);
-        long views = statsList.isEmpty() ? 0L : statsList.get(0).getHits();
-        dto.setViews(views);
+        Map<Long, Double> eventRating = getEventRating(List.of(event));
 
-        log.debug("Количество просмотров события с id={}: {}", id, views);
+        EventFullDto dto = EventDtoMapper.mapToFullDto(event,  categoryDto, userShortDto);
+        double rating = eventRating.getOrDefault(event.getId(), 0.0);
+        dto.setRating(rating);
+        log.debug("Рейтинг события с id={}: {}", eventId, rating);
+
+
+        statsClient.sendUserAction(userId, eventId, ActionTypeProto.ACTION_VIEW);
+
         return dto;
+    }
+
+    @Override
+    public List<EventShortDto> getRecommendations(long userId) {
+
+        UserShortDto userShortDto = checkUserId(userId);
+
+        //TODO maxResults наверно должно быть в АПИ но в ТЗ ничего нет
+
+        Map<Long, Double> eventRating  = statsClient.getGetRecommendationsForUser(userId, 10)
+                .collect(
+                        Collectors.toMap(
+                                RecommendedEventProto::getEventId,
+                                RecommendedEventProto::getScore
+                        )
+                );
+
+
+        List<Event> events =  eventRepository.findByIdIn(eventRating.keySet()).stream()
+                .map(event -> {
+                    double rating = eventRating.getOrDefault(event.getId(), 0.0);
+                    event.setRating(rating);
+                    return event;
+                })
+                .toList();
+
+
+        Map<Long, Category> eventCategory = getCategoryMap(events);
+
+        return events.stream()
+                .map(event -> EventDtoMapper.mapToShortDto(event,
+                        CategoryMapperCustom.toDto(
+                        eventCategory.get(event.getId())),
+                        userShortDto
+                ))
+                .toList();
+
+    }
+
+    @Override
+    public void likeEvent(long eventId, long userId) {
+        checkAndGetEventById(eventId);
+        checkUserId(userId);
+        statsClient.sendUserAction(eventId, userId, ActionTypeProto.ACTION_LIKE);
     }
 
 

@@ -31,7 +31,16 @@ public interface EventApi {
                                                       HttpServletRequest request);
 
     @GetMapping("/events/{id}")
-    EventFullDto getEventById(@PathVariable Long id, HttpServletRequest request);
+    EventFullDto getEventById(@PathVariable Long id,
+                              @RequestHeader("X-EWM-USER-ID") Long userId,
+                              HttpServletRequest request);
+
+    @GetMapping("/events/recommendations")
+    List<EventShortDto> getRecommendations(@RequestHeader("X-EWM-USER-ID") Long userId);
+
+
+    @PutMapping("PUT /events/{eventId}/like")
+    void likeEvent(@PathVariable Long eventId, @RequestHeader("X-EWM-USER-ID") Long userId);
 
     @GetMapping("/events")
     List<EventFullDto> getEvents(
