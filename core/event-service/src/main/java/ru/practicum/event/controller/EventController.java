@@ -49,10 +49,22 @@ public class EventController implements EventApi {
     }
 
     @Override
-    public EventFullDto getEventById(Long id, HttpServletRequest request) {
+    public EventFullDto getEventById(Long id, Long userId, HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         log.info("GET /events/{} from IP {}", id, ip);
-        return eventService.getEventById(id, ip);
+        return eventService.getEventById(id, userId, ip);
+    }
+
+    @Override
+    public List<EventShortDto> getRecommendations(Long userId) {
+        log.info("GET /events/recommendations for user {}", userId);
+        return eventService.getRecommendations(userId);
+    }
+
+    @Override
+    public void likeEvent(Long eventId, Long userId) {
+        log.info("GET /events/{}/like/ for user {}", eventId, userId);
+        eventService.likeEvent(eventId, userId);
     }
 
     @Override
@@ -115,4 +127,6 @@ public class EventController implements EventApi {
                 onlyAvailable, sort, from, size,
                 ip, "admin");
     }
+
+
 }

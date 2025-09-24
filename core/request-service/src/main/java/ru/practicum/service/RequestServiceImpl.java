@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.RequestMapper;
 import ru.practicum.RequestRepository;
+import ru.practicum.StatsClient;
 import ru.practicum.clients.EventClient;
 import ru.practicum.clients.UserClient;
 import ru.practicum.dto.event.EventFullDto;
@@ -18,6 +19,7 @@ import ru.practicum.exception.types.ConflictPropertyConstraintException;
 import ru.practicum.exception.types.ConflictRelationsConstraintException;
 import ru.practicum.exception.types.NotFoundException;
 import ru.practicum.model.Request;
+import ru.yandex.practicum.grpc.stats.action.ActionTypeProto;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -30,6 +32,7 @@ public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
     private final UserClient userClient;
     private final EventClient eventClient;
+    private final StatsClient statsClient;
 
     @Override
     public List<ParticipationRequestDto> getUserRequests(Long userId) {
@@ -79,6 +82,8 @@ public class RequestServiceImpl implements RequestService {
                         (LocalDateTime.now().getNano() / 1_000_000) * 1_000_000
                         ))
                 .build();
+
+        statsClient.sendUserAction(userId, eventId, ActionTypeProto.ACTION_REGISTER);
 
         return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
     }

@@ -37,7 +37,7 @@ public class EventDtoMapper {
                 .initiator(userShortDto)
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .rating(event.getRating())
                 .build();
     }
 
@@ -61,7 +61,7 @@ public class EventDtoMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .rating(event.getRating())
                 .build();
     }
 }
